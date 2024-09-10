@@ -1,0 +1,75 @@
+import tensorflow as tf
+from tensorflow.keras.preprocessing.image import ImageDataGenerator
+import numpy as np
+import os
+
+# Function to load images and masks from directory
+def load_data(image_dir, mask_dir, img_size=(128, 128)):
+    image_filenames = os.listdir(image_dir)
+    mask_filenames = os.listdir(mask_dir)
+
+    images = []
+    masks = []
+
+    for img_filename, mask_filename in zip(image_filenames, mask_filenames):
+        img = tf.keras.preprocessing.image.load_img(
+            os.path.join(image_dir, img_filename), target_size=img_size
+        )
+        img = tf.keras.preprocessing.image.img_to_array(img) / 255.0
+
+        mask = tf.keras.preprocessing.image.load_img(
+            os.path.join(mask_dir, mask_filename), target_size=img_size, color_mode="grayscale"
+        )
+        mask = tf.keras.preprocessing.image.img_to_array(mask) / 255.0
+
+        images.append(img)
+        masks.append(mask)
+
+    return np.array(images), np.array(masks)
+
+# Load the dataset
+image_dir = "path/to/images"
+mask_dir = "path/to/masks"
+img_size = (128, 128)
+
+images, masks = load_data(image_dir, mask_dir, img_size)
+
+# Split the dataset into training and validation sets
+train_images, val_images, train_masks, val_masks = train_test_split(images, masks, test_size=0.2, random_state=42)
+
+# Define the U-Net model (use the code provided earlier)
+input_shape = (128, 128, 3)  # Adjust based on your images
+model = unet_model(input_shape)
+
+# Compile the model
+model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
+
+# Data augmentation (optional)
+data_gen_args = dict(rotation_range=10,
+                     width_shift_range=0.1,
+                     height_shift_range=0.1,
+                     shear_range=0.1,
+                     zoom_range=0.1,
+                     horizontal_flip=True,
+                     fill_mode='nearest')
+
+image_datagen = ImageDataGenerator(**data_gen_args)
+mask_datagen = ImageDataGenerator(**data_gen_args)
+
+# Provide the same seed and keyword arguments to the fit and flow methods
+seed = 1
+batch_size = 16
+
+image_generator = image_datagen.flow(train_images, batch_size=batch_size, seed=seed)
+mask_generator = mask_datagen.flow(train_masks, batch_size=batch_size, seed=seed)
+
+train_generator = zip(image_generator, mask_generator)
+
+# Train the model
+model.fit(train_generator,
+          steps_per_epoch=len(train_images) // batch_size,
+          epochs=20,
+          validation_data=(val_images, val_masks))
+
+# Save the model
+model.save('unet_model.h5')

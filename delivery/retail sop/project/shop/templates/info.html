@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+
+{% block title%}
+Info
+{% endblock %}
+{% block content %}
+
+<div class="hero">
+    <div class="container">
+        <h1> Maximizing Business 
+            Potential with Analytics and AI</h1>
+        <p> In today's data-driven era, businesses are increasingly recognizing the value of analytics 
+            and artificial intelligence (AI) in unlocking strategic insights and maximizing their potential. This 
+            abstract provides an overview of the key themes explored in this study, focusing on the strategic 
+            implications of leveraging analytics and AI for business success. The abstract begins by 
+            highlighting the pervasive influence of data in shaping contemporary business landscapes. With 
+            the proliferation of digital technologies and interconnected systems, organizations have access to 
+            vast amounts of data generated at an unprecedented pace. Harnessing this data to gain actionable 
+            insights and drive informed decision-making has become imperative for staying competitive in 
+            today's dynamic markets. The abstract then delves into the role of analytics and AI as critical 
+            enablers of data-driven strategies. Analytics techniques, ranging from descriptive and diagnostic 
+            to predictive and prescriptive analytics, empower organizations to extract valuable insights from 
+            complex datasets, identify trends, and anticipate future outcomes. Meanwhile, AI technologies, 
+            including machine learning, natural language processing, and computer vision, offer advanced 
+            capabilities for automating tasks, detecting patterns, and generating actionable intelligence. 
+            Furthermore, the abstract discusses the strategic implications of integrating analytics and AI into 
+            business operations. By leveraging these technologies, organizations can enhance their agility, 
+            optimize processes, and drive innovation across various functions, from marketing and sales to 
+            operations and customer service. Moreover, analytics and AI enable organizations to personalize 
+            customer experiences, improve operational efficiency, and mitigate risks, thereby creating tangible 
+            value and competitive advantages. However, the abstract also acknowledges the challenges and 
+            considerations associated with adopting analytics and AI.
+            </p>
+        <a href="{% url 'upload' %}" class="btn btn-primary btn-lg">Get Started</a>
+    </div>
+</div>
+
+
+<!-- Features Section -->
+<div class="features">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-4 feature-box">
+                <i class="fa fa-star fa-3x text-primary"></i>
+                <h3>Feature One</h3>
+                <p>Short description of the first feature. Explain why it's beneficial.</p>
+            </div>
+            <div class="col-md-4 feature-box">
+                <i class="fa fa-cogs fa-3x text-primary"></i>
+                <h3>Feature Two</h3>
+                <p>Short description of the second feature. Highlight its advantages.</p>
+            </div>
+            <div class="col-md-4 feature-box">
+                <i class="fa fa-heart fa-3x text-primary"></i>
+                <h3>Feature Three</h3>
+                <p>Short description of the third feature. Show its importance.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

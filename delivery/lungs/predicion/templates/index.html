@@ -1,0 +1,120 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Landing Page</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+        }
+        .hero {
+            background-color: #f8f9fa;
+            padding: 100px 0;
+            text-align: center;
+        }
+        .hero h1 {
+            font-size: 3.5rem;
+            margin-bottom: 20px;
+        }
+        .hero p {
+            font-size: 1.25rem;
+            margin-bottom: 40px;
+        }
+        .features {
+            padding: 60px 0;
+        }
+        .feature-box {
+            margin-bottom: 30px;
+        }
+        .footer {
+            background-color: #343a40;
+            color: white;
+            padding: 20px 0;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <!-- Hero Section -->
+    <div class="hero">
+        <div class="container">
+            <h1>Segmentation and Classification of Interstitial
+                Lung Diseases Based on Hybrid Deep
+                Learning Network Model</h1>
+            <p>Interstitial lung diseases (ILD) are diverse diseases that share pathological, radiological,
+                and clinical traits and involve interstitial fibrosis and inflammation. These have a significant impact on
+                lung disease morbidity and mortality. From the lung High-Resolution Computed Tomography (HRCT)
+                image, the region of interest (ROI) had to be manually identified for most of the early ILD classification
+                investigations, which was time-consuming. Additionally, the clinical signs of various disorders are identical,
+                which makes precise detection difficult. In recent studies, outstanding results were achieved in categorizing
+                medical photos using deep learning techniques. For ILD classification, a hybrid deep learning network
+                model has been developed in this research. The lung portion of the HRCT images was initially segmented
+                using an improved U-Net++ model. The multi-scale improved U-Net++ module has been applied for
+                effective lung segmentation with lung anomalies. The segmented lung image’s features were extracted
+                for categorization in the second stage using a Refined Attention Pyramid Network (RAPNet). Then,
+                we developed a MobileUNetV3 to classify five ILD classes. The ILD database is used to test the proposed
+                approach. Due to the stage-by-stage improvement in the DL method performance, the proposed hybrid deep
+                learning network model’s performance has significantly increased.
+                </p>
+            <a href="#" class="btn btn-primary btn-lg">Get Started</a>
+        </div>
+    </div>
+
+    <!-- Features Section -->
+    <div class="features">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4 feature-box">
+                    <i class="fa fa-star fa-3x text-primary"></i>
+                    <h3>Feature One</h3>
+                    <p>Short description of the first feature. Explain why it's beneficial.</p>
+                </div>
+                <div class="col-md-4 feature-box">
+                    <i class="fa fa-cogs fa-3x text-primary"></i>
+                    <h3>Feature Two</h3>
+                    <p>Short description of the second feature. Highlight its advantages.</p>
+                </div>
+                <div class="col-md-4 feature-box">
+                    <i class="fa fa-heart fa-3x text-primary"></i>
+                    <h3>Feature Three</h3>
+                    <p>Short description of the third feature. Show its importance.</p>
+                </div>
+            </div>
+        </div>
+        <form method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+            <input type="file" name="image" required>
+            <button type="submit">Upload Image</button>
+        </form>
+
+        {% if uploaded_file_url %}
+        <h3>Uploaded Image:</h3>
+        <img src="{{ uploaded_file_url }}" alt="Uploaded Image" style="max-width: 300px;">
+    {% endif %}
+    </div>
+
+    <!-- Footer Section -->
+    <div class="footer">
+        <div class="container">
+            <p>&copy; 2024 Your Company. All rights reserved.</p>
+            <p>
+                <a href="#" class="text-white">Privacy Policy</a> |
+                <a href="#" class="text-white">Terms of Service</a>
+            </p>
+        </div>
+    </div>
+
+    
+
+    <!-- Bootstrap JS and dependencies -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <!-- Font Awesome for icons -->
+    <script src="https://kit.fontawesome.com/a076d05399.js"></script>
+</body>
+</html>
