@@ -1,0 +1,74 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title%}
+Graph Chart
+{% endblock %}
+{% block content %}
+
+<div class="hero">
+    <div class="container">
+        <h1> Maximizing Business 
+            Potential with Analytics and AI</h1>
+    </div>
+
+<div class="container mt-5">
+    <h1>Select Filters</h1>
+    <form method="post" action="{% url 'graph' %}" >
+        {% csrf_token %}
+        
+        <div class="mb-3">
+            <label for="from_date" class="form-label">From Date:</label>
+            <input type="date" id="from_date" name="from_date" class="form-control">
+        </div>
+
+        <div class="mb-3">
+            <label for="to_date" class="form-label">To Date:</label>
+            <input type="date" id="to_date" name="to_date" class="form-control">
+        </div>
+
+        <div class="mb-3">
+            <label for="category" class="form-label">Category:</label>
+            <select id="category" name="category" class="form-select">
+                <option value="">--Select Category--</option>
+                <option value="Gender">Gender</option>
+                <option value="Payment Method">Payment Method</option>
+                <option value="Shopping Mall">Shopping Mall</option>
+                <option value="Quantity">Quantity</option>
+                <option value="Category">Category</option>
+                {% comment %} <option value="Age">Age</option> {% endcomment %}
+
+            </select>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Filter</button>
+    </form>
+
+
+    {% if table %}
+    <div style='padding-left:50px;'>
+
+        {% if generated %}
+        <h3>The Invoice Date from {{from_date}} To {{to_date}}</h3>
+        {% endif %}
+
+
+
+        {% if size %}
+        <h1>Filtered Data Size : {{size}}</h1>
+        {% endif %}
+        <p>DataFrame Table (Sample Data)</p>
+        <!-- Render the HTML table -->
+        <div style='padding-left:50px;'>
+            {{ table|safe }}
+        </div>
+
+        {% if generated %}
+        {% comment %} <img src="{% static '.\images\out.png' %}" /> {% endcomment %}
+        <img src="data:image/png;base64,{{ imager }}" alt="Graph Chart" width='100%'>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+
+{% endblock %}

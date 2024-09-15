@@ -3,13 +3,16 @@ from django.core.files.storage import FileSystemStorage
 from django.shortcuts import render, redirect
 from .forms import FileUploadForm
 from django.conf import settings
-import os
+from shop.utility import preprocess
 from django.http import HttpResponse
-import shutil
-import pandas as pd
+from pathlib import Path
+import os
 from datetime import datetime
 import matplotlib.pyplot as plt
-from pathlib import Path
+import io
+import base64
+import pandas as pd
+
 
 BASE_DIRI = Path(__file__).resolve().parent.parent
 file_name = ''
@@ -33,11 +36,7 @@ def file_upload_view(request):
 
     return render(request, 'upload_file.html', {'form': form})
 
-def preprocess():
-    
-    df = pd.read_csv( str(BASE_DIRI) + f"\\media\\uploads\\{file_name}")
-    df['invoice_date'] = pd.to_datetime(df['invoice_date'], format='%d-%m-%Y')
-    return df
+
 
 def analyse(request):
     action = request.GET.get('action')
@@ -45,55 +44,283 @@ def analyse(request):
     if action == 'pie_chart':
         return render(request,'charts/pie_chart_filter.html')
     elif action == 'graph':
-        return render(request,'charts/graph.html')
+        # graph_filter('charts/graph_filter.html')
+        # return 
+        # categories = ['Payment Method','Shopping Mall','Gender','Category']
+        return render(request,'charts/graph.html',{
+            # 'categories':categories
+        })
     return render(request,'analyses.html')
+
+
+
+def graph(request):
+    generated = False
+    from_date = ''
+    to_date = ''
+    df = preprocess(BASE_DIRI)  # Assuming preprocess function loads your data
+    min_date = df['invoice_date'].min()
+    max_date = df['invoice_date'].max()
+    df['invoice_date'] = pd.to_datetime(df['invoice_date'],dayfirst=True)
+
+    if request.method == 'POST':
+        from_date = request.POST.get('from_date')
+        to_date = request.POST.get('to_date')
+        from_date = datetime.strptime(from_date,'%Y-%m-%d')
+        
+        to_date = datetime.strptime(to_date,'%Y-%m-%d')
+
+        if from_date and to_date:
+            month_diff = (to_date.year - from_date.year) * 12 + (to_date.month - from_date.month)
+            category = request.POST.get('category')
+            if category == 'Gender':
+                category = 'gender'
+            elif category == 'Payment Method':
+                category ='payment_method'
+            elif category == 'Shopping Mall':
+                category = 'shopping_mall'
+            elif category == 'Quantity':
+                category = 'quantity'
+            elif category == 'Category':
+                category = 'category'
+            # elif category == 'Age':
+            #     category = 'age'
+
+
+            data_lst = list()
+            for i in range(month_diff):
+                tf = df[(df['invoice_date'].dt.year == from_date.year) & (df['invoice_date'].dt.month == from_date.month+ i)]
+                temp = tf[category].value_counts().to_dict()
+                data_lst.append(temp)
+            unique_mall = df[category].unique()
+            data_dict = dict()
+            for i in unique_mall:
+                temp = []
+                for j in range(len(data_lst)):
+                    temp.append(data_lst[j][i])
+                data_dict[i] = temp
+            df = pd.DataFrame(data_dict)
+            lst = ['r','g','b','c','m','y','k','#FF5733','#33FF57','#3357FF']
+            
+            for i in range(len(df.columns)):
+                df[df.columns[i]].plot( label=df.columns[i],grid=False, color=lst[i])
+                        # df['b'].plot(grid=False, color='b', marker='o')
+            
+            plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
+            plt.xlabel('Categories')
+            plt.ylabel('Values')
+            plt.title(f'{from_date} To {to_date}')
+            buffer = io.BytesIO()
+            plt.savefig(buffer, format='png')
+            # plt.close()  # Always close the plot to free memory
+            buffer.seek(0)
+
+            # Encode the plot image in base64 format
+            image_base64 = base64.b64encode(buffer.getvalue()).decode('utf-8')
+            generated = True
+            size = len(df)
+            sample_df = df.head(10) if size > 10 else df
+            table = sample_df.to_html(index=False)
+            
+            # Render template with the pie chart and filtered table
+            return render(request, 'charts/graph.html', {
+                'table': table,
+                'size': size,
+                'generated': generated,
+                # 'from_date': from_date.strftime('%Y-%m-%d'),
+                # 'to_date': to_date.strftime('%Y-%m-%d'),
+                'imager': image_base64
+            })
+
+    return render(request,'charts/graph.html')
+
 
 def pie_chart_filter(request):
     generated = False
     from_date = ''
     to_date = ''
-    options = ['Gender','Payment Method','Shopping Mall','Quantity']
-    df= preprocess()
-    if request.method == 'POST' and request.POST.get('from_date') and request.POST.get('to_date'):
+    df = preprocess(BASE_DIRI)  # Assuming preprocess function loads your data
+    min_date = df['invoice_date'].min()
+    max_date = df['invoice_date'].max()
+    
+    if request.method == 'POST':
         from_date = request.POST.get('from_date')
-        from_date = datetime.strptime(from_date,'%Y-%m-%d')
         to_date = request.POST.get('to_date')
-        to_date = datetime.strptime(to_date,'%Y-%m-%d')
-        category = request.POST.get('category')
 
-        #processing
-        df = df[(df['invoice_date'] >= from_date) & (df['invoice_date'] < to_date)]
-        size = len(df)
-        print(df)
-        if size == 0:
-            return HttpResponse("There is No data from the filter")
-        # sample_data = df.head(500)
+        if from_date and to_date:
+            # try:
+            #     from_date = datetime.strptime(from_date, '%Y-%m-%d')
+            #     to_date = datetime.strptime(to_date, '%Y-%m-%d')
+            # except ValueError:
+            #     return HttpResponse("Invalid date format. Please use YYYY-MM-DD.")
 
-        if category == 'Gender':
-            dict1 = df['gender'].value_counts().to_dict()
+            category = request.POST.get('category')
+
+            # Filter data based on date range
+            df = df[(df['invoice_date'] >= from_date) & (df['invoice_date'] <= to_date)]
+            size = len(df)
+
+            if size == 0:
+                return HttpResponse(f"No data available for the selected date range.Please Select the date Range between {min_date} to {max_date}")
+
+            # Create a dictionary based on the selected category
+            dict1 = {}
+            if category == 'Gender':
+                dict1 = df['gender'].value_counts().to_dict()
+            elif category == 'Payment Method':
+                dict1 = df['payment_method'].value_counts().to_dict()
+            elif category == 'Shopping Mall':
+                dict1 = df['shopping_mall'].value_counts().to_dict()
+            elif category == 'Quantity':
+                dict1 = df['quantity'].value_counts().to_dict()
+            elif category == 'Category':
+                dict1 = df['category'].value_counts().to_dict()
+            elif category == 'Age':
+                dict1 = df['age'].value_counts().to_dict()
+                # Create ranges for age groups
+                dict2 = {'1-20': 0, '20-40': 0, '40-60': 0, '60-80': 0, '80-100': 0}
+                for age, count in dict1.items():
+                    if 1 <= age <= 20:
+                        dict2['1-20'] += count
+                    elif 21 <= age <= 40:
+                        dict2['20-40'] += count
+                    elif 41 <= age <= 60:
+                        dict2['40-60'] += count
+                    elif 61 <= age <= 80:
+                        dict2['60-80'] += count
+                    elif 81 <= age <= 100:
+                        dict2['80-100'] += count
+                dict1 = dict2
+
             labels = list(dict1.keys())
             sizes = list(dict1.values())
-            # plt.figure(figsize=(8, 6))
+
+            # Plot the pie chart
+            plt.figure(figsize=(6,6))  # Optional: specify figure size
             plt.pie(sizes, labels=labels, autopct='%1.1f%%', startangle=140)
-            plt.legend(labels, title="Categories", loc="best")
+            plt.title(f'{category} Distribution')
 
-            # Title
-            plt.title('Pie Chart with Legends')
+            # Save the plot to a byte buffer
+            buffer = io.BytesIO()
+            plt.savefig(buffer, format='png')
+            # plt.close()  # Always close the plot to free memory
+            buffer.seek(0)
 
-            # Display the pie chart
-
-            # plt.savefig(os.path.join(BASE_DIRI, '\\static'), format='png')
-            plt.savefig('.\shop\static\images\out.png', format='png')
+            # Encode the plot image in base64 format
+            image_base64 = base64.b64encode(buffer.getvalue()).decode('utf-8')
             generated = True
 
-        if size >= 100:
-            sample_df = df.head(100)
-        table = sample_df.to_html(index = False)
+            # Display a sample of the filtered data (if large)
+            sample_df = df.head(10) if size > 10 else df
+            table = sample_df.to_html(index=False)
 
-        return render(request,'charts/pie_chart_filter.html',{'options':options,'table':table,'size':size,'generated':generated,'from_date':from_date,'to_date':to_date})
+            # Render template with the pie chart and filtered table
+            return render(request, 'charts/pie_chart_filter.html', {
+                'table': table,
+                'size': size,
+                'generated': generated,
+                # 'from_date': from_date.strftime('%Y-%m-%d'),
+                # 'to_date': to_date.strftime('%Y-%m-%d'),
+                'imager': image_base64
+            })
+
+    # Initial GET request
+    return render(request, 'charts/pie_chart_filter.html',{
+        'min_date':min_date,
+        'max_date':max_date
+    })
 
 
-    return render(request,'charts/pie_chart_filter.html',{'options':options})
+# def pie_chart_filter(request):
+    generated = False
+    from_date = ''
+    to_date = ''
+    df = preprocess(BASE_DIRI)
+    
+    if request.method == 'POST':
+        from_date = request.POST.get('from_date')
+        to_date = request.POST.get('to_date')
+        
+        if from_date and to_date:
+            from_date = datetime.strptime(from_date, '%Y-%m-%d')
+            to_date = datetime.strptime(to_date, '%Y-%m-%d')
+            category = request.POST.get('category')
+
+            # Filtering data based on the selected date range
+            df = df[(df['invoice_date'] >= from_date) & (df['invoice_date'] < to_date)]
+            size = len(df)
+            
+            if size == 0:
+                return HttpResponse("There is no data from the filter")
+            
+            if category == 'Gender':
+                dict1 = df['gender'].value_counts().to_dict()
+            elif category == 'Payment Method':
+                dict1 = df['payment_method'].value_counts().to_dict()
+            elif category == 'Shopping Mall':
+                dict1 = df['shopping_mall'].value_counts().to_dict()
+            elif category == 'Quantity':
+                dict1 = df['quantity'].value_counts().to_dict()
+            elif category == 'Category':
+                dict1 = df['category'].value_counts().to_dict()
+            elif category == 'Age':
+                dict1 = df['age'].value_counts().to_dict()
+                dict2 = dict()
+                dict2['1-20'] = 0
+                dict2['20-40'] = 0
+                dict2['60-80'] = 0
+                dict2['80-100'] = 0
+                for i in dict1.keys():
+                    if i in range(1,21):
+                        dict2['1-20'] += dict1[i]
+                    elif i in range(20,41):
+                        dict2['20-40'] += dict1[i]
+                    elif i in range(40,61):
+                        dict2['40-60'] += dict1[i]
+                    elif i in range(60,81):
+                        dict2['60-80'] += dict1[i]
+                    elif i in range(80,100):
+                        dict2['80-100'] += dict1[i]
+                print(dict2)
+                dict1 = dict2
+            labels = list(dict1.keys())
+            sizes = list(dict1.values())
+
+            # Plotting pie chart
+            plt.pie(sizes, labels=labels, autopct='%1.1f%%', startangle=140)
+            # plt.legend(labels, title="Categories", loc="best")
+            plt.title('Pie Chart with Legends')
+
+            buffer = io.BytesIO()
+            plt.savefig(buffer, format='png')
+            # Save pie chart as image
+            # plt.savefig(os.path.join(BASE_DIRI, 'static/images/out.png'), format='png')
+            # plt.savefig('.\project\shop\static\images\out.png', format='png')
+            # plt.close()  # Close the plot to avoid overlaps in future renderings
+            buffer.seek(0)
+
+    # Encode the image as base64 to pass to HTML
+            image_base64 = base64.b64encode(buffer.getvalue()).decode('utf-8')
+            generated = True
+
+            # Limiting the sample size if it's too large
+            sample_df = df.head(100) if size >= 100 else df
+            table = sample_df.to_html(index=False)
+
+            # Return response with updated context
+            return render(request, 'charts/pie_chart_filter.html', {
+                'table': table,
+                'size': size,
+                'generated': generated,
+                'from_date': from_date,
+                'to_date': to_date,
+                'imager':image_base64
+            })
+
+    # Render the form for GET requests (initial load)
+    return render(request, 'charts/pie_chart_filter.html')
+
+
 
 # def pie_filter_view(request):
 #     return render()

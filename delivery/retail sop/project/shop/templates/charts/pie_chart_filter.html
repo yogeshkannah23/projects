@@ -14,6 +14,11 @@ Pie Chart
 
 <div class="container mt-5">
     <h1>Select Filters</h1>
+    {% if min_date %}
+    <p>
+        Select the date filter between {{min_date}} to {{max_date}}
+    </p>
+    {% endif %}
     <form method="post" action="{% url 'pie_chart' %}" >
         {% csrf_token %}
         
@@ -30,9 +35,14 @@ Pie Chart
         <div class="mb-3">
             <label for="category" class="form-label">Category:</label>
             <select id="category" name="category" class="form-select">
-                {% for option in options %}
-                <option value={{option}}>{{option}}</option>
-                {% endfor %}
+                <option value="">--Select Category--</option>
+                <option value="Gender">Gender</option>
+                <option value="Payment Method">Payment Method</option>
+                <option value="Shopping Mall">Shopping Mall</option>
+                <option value="Quantity">Quantity</option>
+                <option value="Category">Category</option>
+                <option value="Age">Age</option>
+
             </select>
         </div>
 
@@ -41,7 +51,7 @@ Pie Chart
 
 
     {% if table %}
-    <div class="container">
+    <div style='padding-left:50px;'>
 
         {% if generated %}
         <h3>The Invoice Date from {{from_date}} To {{to_date}}</h3>
@@ -54,12 +64,13 @@ Pie Chart
         {% endif %}
         <p>DataFrame Table (Sample Data)</p>
         <!-- Render the HTML table -->
-        <div>
+        <div style='padding-left:50px;'>
             {{ table|safe }}
         </div>
 
         {% if generated %}
-        <img src="{% static '.\images\out.png' %}" />
+        {% comment %} <img src="{% static '.\images\out.png' %}" /> {% endcomment %}
+        <img src="data:image/png;base64,{{ imager }}" alt="Bar Chart">
         {% endif %}
     </div>
     {% endif %}

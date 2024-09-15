@@ -5,5 +5,7 @@ urlpatterns = [
     path('upload/',views.file_upload_view,name='upload'),
     path('analyse/',views.analyse,name='analyse'),
     path('pie_chart/',views.pie_chart_filter,name='pie_chart'),
+    path('graph/',views.graph,name='graph'),
+    # path('graph/',views.graph,name='graph')
     
 ]
