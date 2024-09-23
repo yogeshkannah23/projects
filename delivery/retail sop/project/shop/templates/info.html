@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block title%}
 Info
@@ -42,17 +43,17 @@ Info
         <div class="row">
             <div class="col-md-4 feature-box">
                 <i class="fa fa-star fa-3x text-primary"></i>
-                <h3>Feature One</h3>
+                <h3>PPT</h3>
                 <p>Short description of the first feature. Explain why it's beneficial.</p>
             </div>
             <div class="col-md-4 feature-box">
                 <i class="fa fa-cogs fa-3x text-primary"></i>
-                <h3>Feature Two</h3>
+                <a href="{% static '.\Sathish Base paper.pdf' %}"  type="application/pdf" target="_blank"><h3>Base Paper</h3></a>
                 <p>Short description of the second feature. Highlight its advantages.</p>
             </div>
             <div class="col-md-4 feature-box">
                 <i class="fa fa-heart fa-3x text-primary"></i>
-                <h3>Feature Three</h3>
+                <h3>Report</h3>
                 <p>Short description of the third feature. Show its importance.</p>
             </div>
         </div>

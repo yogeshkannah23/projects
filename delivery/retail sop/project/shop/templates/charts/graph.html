@@ -64,11 +64,14 @@ Graph Chart
         </div>
 
         {% if generated %}
-        {% comment %} <img src="{% static '.\images\out.png' %}" /> {% endcomment %}
-        <img src="data:image/png;base64,{{ imager }}" alt="Graph Chart" width='100%'>
+        <img src="{% static '.\images\out.png' %}" />
+        {% comment %} <img src="data:image/png;base64,{{ imager }}" alt="Graph Chart" width='100%'> {% endcomment %}
         {% endif %}
     </div>
     {% endif %}
+    <br>
+    <br>
+    <a href = "{% url 'analyse' %}" class="btn btn-primary">Go to Analyse</a>
 </div>
 
 {% endblock %}

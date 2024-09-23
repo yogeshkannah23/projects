@@ -46,7 +46,7 @@ Pie Chart
             </select>
         </div>
 
-        <button type="submit" class="btn btn-primary">Filter</button>
+        <button type="submit" class="btn btn-success">Filter</button>
     </form>
 
 
@@ -67,13 +67,67 @@ Pie Chart
         <div style='padding-left:50px;'>
             {{ table|safe }}
         </div>
+        <br>
+        <br>
 
-        {% if generated %}
-        {% comment %} <img src="{% static '.\images\out.png' %}" /> {% endcomment %}
-        <img src="data:image/png;base64,{{ imager }}" alt="Bar Chart">
-        {% endif %}
     </div>
     {% endif %}
+    <br>
+    <div style="width: 50%; margin: auto;">
+        <canvas id="myPieChart"></canvas>
+    </div>
+    <br>
+
+    <a href = "{% url 'analyse' %}" class="btn btn-primary">Go to Analyse</a>
 </div>
+
+<script>
+    // Data for the pie chart
+    label_name = {{labels | safe}}
+    data_lst = {{ sizes}} 
+    backgroundColor_array =  [
+    '#FF6384',  // Soft Red
+    '#36A2EB',  // Light Blue
+    '#FFCE56',  // Yellow
+    '#4BC0C0',  // Teal
+    '#9966FF',  // Purple
+    '#FF9F40',  // Orange
+    '#E7E9ED',  // Light Grey
+    '#FFCD56',  // Gold
+    '#C9CBCF',  // Silver
+    '#F7464A'   // Deep Red
+]
+
+    const data = {
+        labels: label_name, // Label names for the pie chart
+        datasets: [{
+            data: data_lst,  // Data values (e.g., 300 for Red, 50 for Blue, etc.)
+            backgroundColor: backgroundColor_array.slice(0,data_lst.length) ,  // Background colors for each slice
+            hoverBackgroundColor: backgroundColor_array.slice(0,data_lst.length),  // Colors when hovered
+        }]
+    };
+
+    // Configuration object for the pie chart
+    const config = {
+        type: 'pie',  // Specifies the type of chart (Pie)
+        data: data,
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'top',  // Position of the legend (top, bottom, left, right)
+                },
+                tooltip: {
+                    enabled: true  // Enable tooltips
+                }
+            }
+        }
+    };
+
+    // Rendering the pie chart
+    const ctx = document.getElementById('myPieChart').getContext('2d');
+    new Chart(ctx, config);  // Initialize the Chart.js pie chart
+</script>
+
 
 {% endblock %}

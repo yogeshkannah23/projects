@@ -9,6 +9,7 @@
     <title>{% block title %}My Website{% endblock %}</title>
     <!-- Bootstrap CSS -->
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         body {
             font-family: 'Arial', sans-serif;
@@ -71,6 +72,17 @@
 </head>
 <body>
     
+    <nav class="navbar bg-body-tertiary">
+        <div class="container-fluid bg-primary">
+          <a class="navbar-brand" href="#">
+            <h2>
+                <br>
+                <br>
+            </h2>
+            {% comment %} <img src="/docs/5.3/assets/brand/bootstrap-logo.svg" alt="Bootstrap" width="30" height="24"> {% endcomment %}
+          </a>
+        </div>
+      </nav>
 
     <main>
         {% block content %}
@@ -78,8 +90,8 @@
         {% endblock %}
     </main>
 
-    <footer>
-        <p>&copy; 2024 My Website</p>
-    </footer>
+    {% comment %} <div class='bg-primary'>
+        <p class='hero'>&copy; <b>IFET COLLEGE OF ENGINEERING 2024</b></p>
+    </div> {% endcomment %}
 </body>
 </html>
